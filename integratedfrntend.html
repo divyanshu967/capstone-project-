@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leave Management System – SPA Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#1e9c55; --primary-2:#2bc06d; --accent:#0d6efd; --danger:#dc3545; --muted:#e5e7eb; --text:#1f2937;
+    --panel: rgba(255,255,255,0.97); --shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  html, body {height:100%; margin:0; font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--text); background:#e5e7eb;}
+  /* Auth cards */
+  .center-wrap{display:flex; align-items:center; justify-content:center; min-height:100vh; position:relative;}
+  .card{width:420px; max-width:94vw; background:var(--panel); border-radius:16px; box-shadow:var(--shadow); padding:28px;}
+  h1{margin:0 0 16px; color:var(--primary);} h2{margin:0 0 14px;} h3{margin:0 0 10px;}
+  label{font-weight:600; font-size:14px;}
+  input, select, textarea {width:100%; padding:12px 12px; border:1px solid #cfd8e3; border-radius:10px; margin:8px 0 16px; font-size:15px;}
+  textarea{resize:vertical;}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border:none; border-radius:12px; cursor:pointer; font-weight:600; transition:transform .08s ease, box-shadow .2s ease; box-shadow:0 1px 0 rgba(0,0,0,.04);} .btn:active{transform:translateY(1px);} 
+  .btn-primary{background:var(--primary); color:#fff;} .btn-primary:hover{background:var(--primary-2);} 
+  .btn-accent{background:var(--accent); color:#fff;} .btn-accent:hover{filter:brightness(1.05);} 
+  .btn-muted{background:#e5e7eb;} .btn-muted:hover{background:#dfe3e8;}
+  .btn-danger{background:var(--danger); color:#fff;} .btn-danger:hover{filter:brightness(1.05);} 
+  .inline {display:flex; gap:10px;}
+  .error{color:#b42318; min-height:18px; font-size:14px; margin-top:-8px; margin-bottom:8px;}
+  .link{color:var(--accent); font-weight:600; cursor:pointer;}
+  .small{font-size:13px; color:#6b7280;}
+
+  /* Layout */
+  .app{display:none; min-height:100vh;}
+  .topbar{position:sticky; top:0; z-index:5; background:#ffffffd9; backdrop-filter:saturate(1.3) blur(8px); box-shadow:0 1px 0 #e5e7eb;}
+  .topbar-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:12px 16px;}
+  .brand{font-weight:800; color:var(--primary); letter-spacing:.2px;}
+  .user-pill{display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f3f4f6; border-radius:999px;}
+  .user-pill img{width:28px; height:28px; border-radius:50%; object-fit:cover;}
+
+  .wrap{max-width:1200px; margin:22px auto; padding:0 12px; display:grid; grid-template-columns:240px 1fr; gap:16px;}
+  .sidebar{background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:14px; height:max-content;}
+  .nav a{display:block; padding:10px 12px; border-radius:10px; color:#111827; text-decoration:none; font-weight:600; transition:background .2s ease, color .2s ease;}
+  .nav a:hover, .nav a.active{background:#ecfdf3; color:#065f46;}
+  .content{min-height:60vh;}
+
+  .panel{background:#fff; border-radius:16px; box-shadow:var(--shadow); padding:18px; margin-bottom:16px;}
+  .grid{display:grid; gap:14px;} .grid-3{grid-template-columns:repeat(3,1fr);} .grid-2{grid-template-columns:repeat(2,1fr);} 
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} .grid-2{grid-template-columns:1fr;} }
+
+  /* Table */
+  table{width:100%; border-collapse:collapse;}
+  th, td{border-bottom:1px solid #eef2f7; padding:10px; text-align:left; font-size:14px;}
+  th{background:#f8fafc;}
+  tr:last-child td{border-bottom:none;}
+
+  /* Chart */
+  #chartWrap{width:min(520px, 100%); height:300px;}
+  #empPie{width:100% !important; height:100% !important;}
+
+  /* Tag */
+  .tag{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700;}
+  .tag-pending{background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;}
+  .tag-approved{background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;}
+  .tag-rejected{background:#fef2f2; color:#991b1b; border:1px solid #fecaca;}
+
+  /* Hidden util */
+  .hidden{display:none !important;}
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- ============== AUTH SCREENS ============== -->
+<div id="auth" class="center-wrap">
+  <div class="card" id="signupCard">
+    <h1>Create Account</h1>
+    <div class="error" id="signupErr"></div>
+    <label>Email</label>
+    <input id="suEmail" type="email" placeholder="you@company.com"/>
+    <label>Password</label>
+    <input id="suPass" type="password" placeholder="Min 8 characters"/>
+    <label>Role</label>
+    <select id="suRole">
+      <option value="Employee">Employee</option>
+      <option value="Admin">Admin</option>
+      <option value="HR">HR</option>
+      <option value="Finance">Finance</option>
+      <option value="IT">IT</option>
+      <option value="Teacher">Teacher</option>
+    </select>
+    <div class="inline">
+      <button class="btn btn-primary" onclick="handleSignup()">Create</button>
+      <button class="btn btn-muted" onclick="showLogin()">I already have an account</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="loginCard">
+    <h1>Login</h1>
+    <div class="error" id="loginErr"></div>
+    <label>Email</label>
+    <input id="liEmail" type="email" placeholder="you@company.com"/>
+    <label>Password</label>
+    <input id="liPass" type="password" placeholder="Your password"/>
+    <div class="inline">
+      <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+      <button class="btn btn-muted" onclick="showSignup()">Create account</button>
+    </div>
+    <p class="small">Forgot your password? <span class="link" onclick="showForgot()">Reset via email</span></p>
+  </div>
+
+  <div class="card hidden" id="forgotCard">
+    <h1>Reset Password</h1>
+    <div class="error" id="forgotErr"></div>
+    <label>Enter your email</label>
+    <input id="fpEmail" type="email" placeholder="you@company.com"/>
+    <button class="btn btn-accent" onclick="handleForgot()">Send reset link</button>
+    <p class="small">(Demo) A reset token will appear on screen.
+      <br/>Use it below to set a new password.
+    </p>
+    <div id="resetDemo" class="hidden">
+      <label>Paste token</label>
+      <input id="resetToken" placeholder="Paste token here" />
+      <label>New password</label>
+      <input id="resetPass" type="password" placeholder="Min 8 characters"/>
+      <button class="btn btn-primary" onclick="handleReset()">Update Password</button>
+    </div>
+    <button class="btn btn-muted" style="margin-top:8px" onclick="showLogin()">Back to Login</button>
+  </div>
+</div>
+
+<!-- ============== APP LAYOUT ============== -->
+<div id="app" class="app">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">Leafy • Leave Management</div>
+      <div class="user-pill">
+        <img id="userAvatar" src="" alt="avatar"/>
+        <div>
+          <div id="userEmail" style="font-weight:700"></div>
+          <div id="userRole" class="small"></div>
+        </div>
+        <button class="btn btn-muted" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <aside class="sidebar">
+      <nav class="nav" id="sideNav">
+        <a href="#" data-route="dashboard" class="active" onclick="nav(event)">Dashboard</a>
+        <a href="#" data-route="leave" onclick="nav(event)">Apply Leave</a>
+        <a href="#" data-route="approvals" onclick="nav(event)">Approvals</a>
+        <a href="#" data-route="reporting" onclick="nav(event)">Reporting Officers</a>
+        <a href="#" data-route="admin" onclick="nav(event)">Admin Control</a>
+        <a href="#" data-route="profile" onclick="nav(event)">My Profile</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <!-- DASHBOARD -->
+      <section id="screen-dashboard" class="panel">
+        <h2>Dashboard</h2>
+        <div class="grid grid-3" style="margin-top:8px">
+          <div class="panel">
+            <h3>Total Employees</h3>
+            <div id="cardEmployees" style="font-size:28px; font-weight:800;">0</div>
+          </div>
+          <div class="panel">
+            <h3>Pending Leaves</h3>
+            <div id="cardPending" style="font-size:28px; font-weight:800;">0</div>
+          </div>
+          <div class="panel">
+            <h3>My Pending</h3>
+            <div id="cardMyPending" style="font-size:28px; font-weight:800;">0</div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:12px;">
+          <h3>My Leaves: This Month</h3>
+          <div id="chartWrap"><canvas id="empPie"></canvas></div>
+        </div>
+      </section>
+
+      <!-- APPLY LEAVE -->
+      <section id="screen-leave" class="panel hidden">
+        <h2>Apply Leave</h2>
+        <div class="error" id="leaveErr"></div>
+        <div class="grid grid-2">
+          <div>
+            <label>Leave Type</label>
+            <select id="lvType">
+              <option value="">Select</option>
+              <option>Casual</option>
+              <option>Sick</option>
+              <option>Emergency</option>
+              <option>Earned</option>
+            </select>
+          </div>
+          <div>
+            <label>Days</label>
+            <input type="number" id="lvDays" min="1" max="30" placeholder="e.g., 2"/>
+          </div>
+        </div>
+        <label>Reason</label>
+        <textarea id="lvReason" rows="3" placeholder="Optional"></textarea>
+        <button class="btn btn-primary" onclick="submitLeave()">Submit</button>
+        <div class="panel" style="margin-top:14px;">
+          <h3>My Recent Requests</h3>
+          <table>
+            <thead><tr><th>Date</th><th>Type</th><th>Days</th><th>Status</th></tr></thead>
+            <tbody id="myLeavesTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- APPROVALS (for roles with permission) -->
+      <section id="screen-approvals" class="panel hidden">
+        <h2>Approvals</h2>
+        <div class="small" id="apprInfo"></div>
+        <table style="margin-top:10px;">
+          <thead><tr><th>Employee</th><th>Type</th><th>Days</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="apprTbody"></tbody>
+        </table>
+      </section>
+
+      <!-- REPORTING OFFICERS -->
+      <section id="screen-reporting" class="panel hidden">
+        <h2>Assign Reporting Officers</h2>
+        <div class="small">Select an officer for each employee. (Stored locally for demo)</div>
+        <table style="margin-top:10px;">
+          <thead><tr><th>Employee</th><th>Role</th><th>Reporting Officer</th></tr></thead>
+          <tbody id="reportingTbody"></tbody>
+        </table>
+      </section>
+
+      <!-- ADMIN CONTROL PANEL -->
+      <section id="screen-admin" class="panel hidden">
+        <h2>Admin Control Panel</h2>
+        <div class="panel">
+          <h3>Role Permissions</h3>
+          <div class="small">Toggle which actions a role can perform.</div>
+          <div id="permMatrix"></div>
+          <button class="btn btn-primary" style="margin-top:10px;" onclick="savePerms()">Save Permissions</button>
+        </div>
+        <div class="panel">
+          <h3>Users</h3>
+          <table>
+            <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section id="screen-profile" class="panel hidden">
+        <h2>My Profile</h2>
+        <div class="grid grid-2">
+          <div>
+            <label>Photo</label>
+            <input id="pfPhoto" type="file" accept="image/*" />
+            <img id="pfPreview" src="" alt="preview" style="margin-top:10px; width:120px; height:120px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow);"/>
+          </div>
+          <div>
+            <label>Full Name</label>
+            <input id="pfName" placeholder="Your name"/>
+            <label>Phone</label>
+            <input id="pfPhone" placeholder="+91 9XXXXXXXXX"/>
+            <label>Address</label>
+            <textarea id="pfAddr" rows="3" placeholder="Address"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+/**********************
+ * UTILITIES & STORAGE
+ **********************/
+const LS = {
+  users: 'lms_users',
+  leaves: 'lms_leaves',
+  session: 'lms_session',
+  perms: 'lms_perms'
+};
+
+const DEFAULT_PERMISSIONS = {
+  Admin:   ['approve_leave','assign_reporting','manage_permissions','view_dashboard','apply_leave','manage_users'],
+  HR:      ['approve_leave','assign_reporting','view_dashboard','apply_leave'],
+  Finance: ['view_dashboard'],
+  IT:      ['view_dashboard'],
+  Teacher: ['apply_leave','view_dashboard'],
+  Employee:['apply_leave','view_dashboard']
+};
+
+const TOTAL_LEAVES_PER_YEAR = 24; // demo value
+
+function readLS(key, fallback){ try { return JSON.parse(localStorage.getItem(key)) ?? structuredClone(fallback); } catch { return structuredClone(fallback); } }
+function writeLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+// Simple SHA-256 (demo only – real apps use bcrypt/argon2 on server)
+async function sha256(str){ const enc = new TextEncoder().encode(str); const buf = await crypto.subtle.digest('SHA-256', enc); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+
+function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+function nowISO(){ return new Date().toISOString(); }
+function thisMonthKey(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+
+/**********************
+ * AUTH SCREENS
+ **********************/
+function showLogin(){ document.getElementById('signupCard').classList.add('hidden'); document.getElementById('forgotCard').classList.add('hidden'); document.getElementById('loginCard').classList.remove('hidden'); }
+function showSignup(){ document.getElementById('loginCard').classList.add('hidden'); document.getElementById('forgotCard').classList.add('hidden'); document.getElementById('signupCard').classList.remove('hidden'); }
+function showForgot(){ document.getElementById('loginCard').classList.add('hidden'); document.getElementById('signupCard').classList.add('hidden'); document.getElementById('forgotCard').classList.remove('hidden'); }
+
+async function handleSignup(){
+  const email = document.getElementById('suEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('suPass').value;
+  const role = document.getElementById('suRole').value;
+  const err = document.getElementById('signupErr');
+  err.textContent = '';
+  if(!email || !pass){ err.textContent='Email and password are required.'; return; }
+  if(pass.length < 8){ err.textContent='Password must be at least 8 characters.'; return; }
+  let users = readLS(LS.users, []);
+  if(users.some(u=>u.email===email)){ err.textContent='Email already registered.'; return; }
+  const passHash = await sha256(pass);
+  const user = { id: uid(), email, passHash, role, profile:{name:'', phone:'', address:'', photo:''}, reportingOfficerId: null, resetToken:null };
+  users.push(user); writeLS(LS.users, users);
+  alert('Account created. Please login.'); showLogin();
+}
+
+async function handleLogin(){
+  const email = document.getElementById('liEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('liPass').value;
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  const users = readLS(LS.users, []);
+  const user = users.find(u=>u.email===email);
+  if(!user){ err.textContent='Invalid credentials.'; return; }
+  const passHash = await sha256(pass);
+  if(passHash !== user.passHash){ err.textContent='Invalid credentials.'; return; }
+  writeLS(LS.session, { userId: user.id });
+  startApp();
+}
+
+function logout(){ localStorage.removeItem(LS.session); location.reload(); }
+
+// Forgot / Reset (demo: shows token instead of sending email)
+function handleForgot(){
+  const email = document.getElementById('fpEmail').value.trim().toLowerCase();
+  const err = document.getElementById('forgotErr'); err.textContent='';
+  let users = readLS(LS.users, []);
+  const idx = users.findIndex(u=>u.email===email);
+  if(idx===-1){ err.textContent = 'No account found for this email.'; return; }
+  const token = uid();
+  users[idx].resetToken = { token, exp: Date.now() + 1000*60*15 }; // 15 min
+  writeLS(LS.users, users);
+  const box = document.getElementById('resetDemo');
+  box.classList.remove('hidden');
+  box.querySelector('#resetToken').value = token;
+  alert('Demo: A reset token has been generated and displayed.');
+}
+
+async function handleReset(){
+  const token = document.getElementById('resetToken').value.trim();
+  const newPass = document.getElementById('resetPass').value;
+  const err = document.getElementById('forgotErr'); err.textContent='';
+  if(newPass.length<8){ err.textContent='Password must be at least 8 characters.'; return; }
+  let users = readLS(LS.users, []);
+  const idx = users.findIndex(u=>u.resetToken && u.resetToken.token===token);
+  if(idx===-1){ err.textContent='Invalid token.'; return; }
+  if(Date.now()>users[idx].resetToken.exp){ err.textContent='Token expired.'; return; }
+  users[idx].passHash = await sha256(newPass);
+  users[idx].resetToken = null;
+  writeLS(LS.users, users);
+  alert('Password updated. Please login.');
+  showLogin();
+}
+
+/**********************
+ * APP INIT & NAV
+ **********************/
+let CURRENT_USER = null; // object
+let PERMS = {};
+let pieChart = null;
+
+function startApp(){
+  // Load session & user
+  const sess = readLS(LS.session, null); if(!sess){ return; }
+  const users = readLS(LS.users, []);
+  const user = users.find(u=>u.id===sess.userId); if(!user){ return; }
+  CURRENT_USER = user;
+
+  // Load or bootstrap permissions
+  PERMS = readLS(LS.perms, null) || structuredClone(DEFAULT_PERMISSIONS);
+  writeLS(LS.perms, PERMS);
+
+  // Show app
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='block';
+  // Header details
+  document.getElementById('userEmail').textContent = CURRENT_USER.email;
+  document.getElementById('userRole').textContent = CURRENT_USER.role;
+  document.getElementById('userAvatar').src = CURRENT_USER.profile.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(CURRENT_USER.email)}`;
+
+  // Sidebar visibility based on permissions
+  const navEl = document.getElementById('sideNav');
+  [...navEl.querySelectorAll('a')].forEach(a=>{
+    const route = a.dataset.route;
+    let allowed = true;
+    if(route==='leave') allowed = PERMS[CURRENT_USER.role]?.includes('apply_leave');
+    if(route==='approvals') allowed = PERMS[CURRENT_USER.role]?.includes('approve_leave');
+    if(route==='reporting') allowed = PERMS[CURRENT_USER.role]?.includes('assign_reporting');
+    if(route==='admin') allowed = PERMS[CURRENT_USER.role]?.includes('manage_permissions');
+    a.style.display = allowed ? 'block' : 'none';
+  });
+
+  // Load screens
+  renderDashboard();
+  renderMyLeaves();
+  renderApprovals();
+  renderReporting();
+  renderAdmin();
+  renderProfile();
+}
+
+function nav(e){ e.preventDefault(); const route = e.currentTarget.dataset.route; showScreen(route); [...e.currentTarget.parentElement.children].forEach(a=>a.classList.remove('active')); e.currentTarget.classList.add('active'); }
+
+function showScreen(route){
+  const map = ['dashboard','leave','approvals','reporting','admin','profile'];
+  for(const r of map){ document.getElementById(`screen-${r}`).classList.add('hidden'); }
+  document.getElementById(`screen-${route}`).classList.remove('hidden');
+  if(route==='dashboard'){ renderDashboard(); }
+  if(route==='leave'){ renderMyLeaves(); }
+  if(route==='approvals'){ renderApprovals(); }
+  if(route==='reporting'){ renderReporting(); }
+  if(route==='admin'){ renderAdmin(); }
+  if(route==='profile'){ renderProfile(); }
+}
+
+/**********************
+ * DATA HELPERS
+ **********************/
+function getLeaves(){ return readLS(LS.leaves, []); }
+function setLeaves(arr){ writeLS(LS.leaves, arr); }
+
+function getUsers(){ return readLS(LS.users, []); }
+function setUsers(arr){ writeLS(LS.users, arr); }
+
+/**********************
+ * DASHBOARD
+ **********************/
+function renderDashboard(){
+  const users = getUsers();
+  const leaves = getLeaves();
+  document.getElementById('cardEmployees').textContent = users.length;
+  const pending = leaves.filter(l=>l.status==='Pending').length;
+  document.getElementById('cardPending').textContent = pending;
+  const myPending = leaves.filter(l=>l.userId===CURRENT_USER.id && l.status==='Pending').length;
+  document.getElementById('cardMyPending').textContent = myPending;
+
+  // Pie for this month (my leaves)
+  const month = thisMonthKey();
+  const myMonthLeaves = leaves.filter(l=>l.userId===CURRENT_USER.id && l.month===month && l.status!=='Rejected');
+  const daysTaken = myMonthLeaves.reduce((s,l)=>s+l.days,0);
+  const monthlyQuota = 2; // demo: 2 days per month
+  const daysLeft = Math.max(0, monthlyQuota - daysTaken);
+
+  const ctx = document.getElementById('empPie').getContext('2d');
+  if(pieChart) pieChart.destroy();
+  pieChart = new Chart(ctx, {
+    type:'pie',
+    data:{ labels:['Taken','Left'], datasets:[{ data:[daysTaken, daysLeft], backgroundColor:['#1e9c55','#cfd8e3'] }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{
+        legend:{ position:'bottom' },
+        title:{ display:true, text:`${month} Usage` },
+        tooltip:{
+          callbacks:{
+            label:(context)=>{
+              const total = context.dataset.data.reduce((a,b)=>a+b,0) || 1;
+              const val = context.parsed;
+              const pct = Math.round((val/total)*100);
+              return `${context.label}: ${val} day(s) • ${pct}%`;
+            }
+          }
+        }
+      } }
+  });
+}
+
+/**********************
+ * APPLY LEAVE
+ **********************/
+function renderMyLeaves(){
+  const tbody = document.getElementById('myLeavesTbody');
+  const leaves = getLeaves().filter(l=>l.userId===CURRENT_USER.id).sort((a,b)=>b.created.localeCompare(a.created));
+  tbody.innerHTML = '';
+  for(const l of leaves.slice(0,10)){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${new Date(l.created).toLocaleDateString()}</td>
+                    <td>${l.type}</td>
+                    <td>${l.days}</td>
+                    <td>${statusTag(l.status)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function statusTag(s){
+  if(s==='Pending')  return `<span class="tag tag-pending">Pending</span>`;
+  if(s==='Approved') return `<span class="tag tag-approved">Approved</span>`;
+  return `<span class="tag tag-rejected">Rejected</span>`;
+}
+
+function submitLeave(){
+  const type = document.getElementById('lvType').value;
+  const days = parseInt(document.getElementById('lvDays').value,10);
+  const reason = document.getElementById('lvReason').value.trim();
+  const err = document.getElementById('leaveErr'); err.textContent='';
+  if(!type){ err.textContent='Please select leave type.'; return; }
+  if(!days || days<=0){ err.textContent='Enter valid number of days.'; return; }
+
+  const leaves = getLeaves();
+  const month = thisMonthKey();
+  const rec = { id:uid(), userId:CURRENT_USER.id, email:CURRENT_USER.email, type, days, reason, status:'Pending', month, created:nowISO() };
+
+  // Emergency auto-approve
+  if(type==='Emergency'){ rec.status='Approved'; }
+
+  leaves.push(rec); setLeaves(leaves);
+  renderMyLeaves(); renderDashboard();
+  alert(rec.status==='Approved' ? 'Emergency leave auto-approved.' : 'Leave submitted for approval.');
+  document.getElementById('lvType').value='';
+  document.getElementById('lvDays').value='';
+  document.getElementById('lvReason').value='';
+}
+
+/**********************
+ * APPROVALS
+ **********************/
+function can(role, perm){ return (PERMS[role]||[]).includes(perm); }
+
+function renderApprovals(){
+  const info = document.getElementById('apprInfo');
+  if(!can(CURRENT_USER.role,'approve_leave')){
+    info.textContent = 'You do not have permission to approve leaves.';
+    document.getElementById('apprTbody').innerHTML = '';
+    return;
+  } else { info.textContent = 'Approve or reject pending requests.'; }
+
+  const tbody = document.getElementById('apprTbody');
+  const leaves = getLeaves().sort((a,b)=>b.created.localeCompare(a.created));
+  tbody.innerHTML = '';
+  for(const l of leaves){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${l.email}</td><td>${l.type}</td><td>${l.days}</td><td>${new Date(l.created).toLocaleString()}</td>
+                    <td>${statusTag(l.status)}</td>
+                    <td>${l.type==='Emergency' ? '—' : actionBtns(l)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function actionBtns(l){
+  if(l.status!=='Pending') return '—';
+  return `<div class="inline">
+            <button class="btn btn-primary" onclick="approve('${l.id}')">Approve</button>
+            <button class="btn btn-danger" onclick="reject('${l.id}')">Reject</button>
+          </div>`;
+}
+
+function approve(id){
+  const leaves = getLeaves();
+  const idx = leaves.findIndex(l=>l.id===id);
+  if(idx>-1){ leaves[idx].status='Approved'; setLeaves(leaves); renderApprovals(); renderDashboard(); alert('Approved'); }
+}
+function reject(id){
+  const leaves = getLeaves();
+  const idx = leaves.findIndex(l=>l.id===id);
+  if(idx>-1){ leaves[idx].status='Rejected'; setLeaves(leaves); renderApprovals(); renderDashboard(); alert('Rejected'); }
+}
+
+/**********************
+ * REPORTING OFFICERS
+ **********************/
+function renderReporting(){
+  const tbody = document.getElementById('reportingTbody');
+  const users = getUsers();
+  tbody.innerHTML='';
+  for(const u of users){
+    const tr = document.createElement('tr');
+    const options = users.map(v=>`<option value="${v.id}" ${u.reportingOfficerId===v.id?'selected':''}>${v.email}</option>`).join('');
+    tr.innerHTML = `<td>${u.email}</td><td>${u.role}</td>
+                    <td><select onchange="setRO('${u.id}', this.value)"><option value="">— None —</option>${options}</select></td>`;
+    tbody.appendChild(tr);
+  }
+  // Only show if permission exists
+  document.getElementById('screen-reporting').style.display = can(CURRENT_USER.role,'assign_reporting') ? 'block' : 'none';
+}
+
+function setRO(userId, roId){
+  const users = getUsers();
+  const idx = users.findIndex(u=>u.id===userId);
+  if(idx>-1){ users[idx].reportingOfficerId = roId || null; setUsers(users); alert('Updated'); }
+}
+
+/**********************
+ * ADMIN CONTROL PANEL
+ **********************/
+function renderAdmin(){
+  // Permissions matrix
+  const container = document.getElementById('permMatrix');
+  const ALL_PERMS = ['view_dashboard','apply_leave','approve_leave','assign_reporting','manage_permissions','manage_users'];
+  const roles = Object.keys(PERMS);
+  let html = `<table><thead><tr><th>Role</th>${ALL_PERMS.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>`;
+  for(const role of roles){
+    html += `<tr><td style="font-weight:700">${role}</td>`;
+    for(const p of ALL_PERMS){
+      const checked = PERMS[role]?.includes(p) ? 'checked' : '';
+      html += `<td><input type="checkbox" data-role="${role}" data-perm="${p}" ${checked}></td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+
+  // Users list
+  const users = getUsers();
+  const tbody = document.getElementById('usersTbody');
+  tbody.innerHTML='';
+  for(const u of users){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${u.email}</td>
+                    <td><select onchange="changeRole('${u.id}', this.value)">
+                        ${Object.keys(PERMS).map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}
+                        </select></td>
+                    <td><button class="btn btn-danger" onclick="deleteUser('${u.id}')">Delete</button></td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Only visible to those with permission
+  document.getElementById('screen-admin').style.display = can(CURRENT_USER.role,'manage_permissions') ? 'block' : 'none';
+}
+
+function savePerms(){
+  const checks = document.querySelectorAll('#permMatrix input[type=checkbox]');
+  const next = {}; for(const role of Object.keys(PERMS)) next[role] = [];
+  checks.forEach(ch=>{ if(ch.checked){ const r=ch.dataset.role, p=ch.dataset.perm; (next[r]||(next[r]=[])).push(p); } });
+  PERMS = next; writeLS(LS.perms, PERMS); alert('Permissions saved'); startApp();
+}
+
+function changeRole(userId, role){
+  const users = getUsers(); const idx = users.findIndex(u=>u.id===userId);
+  if(idx>-1){ users[idx].role = role; setUsers(users); if(CURRENT_USER.id===userId){ CURRENT_USER.role = role; startApp(); } }
+}
+
+function deleteUser(userId){
+  if(!confirm('Delete user?')) return;
+  let users = getUsers(); users = users.filter(u=>u.id!==userId); setUsers(users);
+  if(CURRENT_USER.id===userId){ logout(); } else { renderAdmin(); renderDashboard(); }
+}
+
+/**********************
+ * PROFILE
+ **********************/
+function renderProfile(){
+  document.getElementById('pfName').value = CURRENT_USER.profile.name || '';
+  document.getElementById('pfPhone').value = CURRENT_USER.profile.phone || '';
+  document.getElementById('pfAddr').value = CURRENT_USER.profile.address || '';
+  document.getElementById('pfPreview').src = CURRENT_USER.profile.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(CURRENT_USER.email)}`;
+}
+
+document.getElementById('pfPhoto').addEventListener('change', async (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const url = await fileToDataURL(file);
+  CURRENT_USER.profile.photo = url; updateCurrentUser();
+  document.getElementById('pfPreview').src = url;
+  document.getElementById('userAvatar').src = url;
+});
+
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+
+function saveProfile(){
+  CURRENT_USER.profile.name = document.getElementById('pfName').value.trim();
+  CURRENT_USER.profile.phone = document.getElementById('pfPhone').value.trim();
+  CURRENT_USER.profile.address = document.getElementById('pfAddr').value.trim();
+  updateCurrentUser(); alert('Profile saved');
+}
+
+function updateCurrentUser(){
+  const users = getUsers(); const idx = users.findIndex(u=>u.id===CURRENT_USER.id);
+  if(idx>-1){ users[idx] = CURRENT_USER; setUsers(users); }
+}
+
+/**********************
+ * BOOTSTRAP DEMO DATA (if empty)
+ **********************/
+(function bootstrap(){
+  if(!readLS(LS.perms, null)){ writeLS(LS.perms, DEFAULT_PERMISSIONS); }
+  if(readLS(LS.users, []).length===0){
+    (async ()=>{
+      const admin = { id:uid(), email:'admin@demo.com', passHash: await sha256('Admin@123'), role:'Admin', profile:{name:'Admin', phone:'', address:'', photo:''}, reportingOfficerId:null, resetToken:null };
+      const hr    = { id:uid(), email:'hr@demo.com',    passHash: await sha256('Hr@12345'),    role:'HR',    profile:{name:'HR', phone:'', address:'', photo:''}, reportingOfficerId:null, resetToken:null };
+      const emp   = { id:uid(), email:'emp@demo.com',   passHash: await sha256('Emp@12345'),   role:'Employee', profile:{name:'Employee', phone:'', address:'', photo:''}, reportingOfficerId:null, resetToken:null };
+      writeLS(LS.users, [admin, hr, emp]);
+
+      const sampleLeaves = [
+        { id:uid(), userId:emp.id, email:emp.email, type:'Casual', days:1, reason:'Personal', status:'Pending', month:thisMonthKey(), created:nowISO() },
+        { id:uid(), userId:emp.id, email:emp.email, type:'Emergency', days:1, reason:'Medical', status:'Approved', month:thisMonthKey(), created:nowISO() }
+      ];
+      writeLS(LS.leaves, sampleLeaves);
+    })();
+  }
+
+  // Auto-login if session exists
+  const sess = readLS(LS.session, null);
+  if(sess){ startApp(); }
+})();
+
+</script>
+</body>
+</html>
