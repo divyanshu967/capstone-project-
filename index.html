@@ -1,149 +1,169 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Leave Management System – SPA Demo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --primary:#1e9c55; --primary-2:#2bc06d; --accent:#0d6efd; --danger:#dc3545; --muted:#e5e7eb; --text:#1f2937;
-    --panel: rgba(255,255,255,0.97); --shadow: 0 10px 30px rgba(0,0,0,.18);
-  }
-  html, body {height:100%; margin:0; font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--text); background:#e5e7eb;}
-  /* Auth cards */
-  .center-wrap{display:flex; align-items:center; justify-content:center; min-height:100vh; position:relative;}
-  .card{width:420px; max-width:94vw; background:var(--panel); border-radius:16px; box-shadow:var(--shadow); padding:28px;}
-  h1{margin:0 0 16px; color:var(--primary);} h2{margin:0 0 14px;} h3{margin:0 0 10px;}
-  label{font-weight:600; font-size:14px;}
-  input, select, textarea {width:100%; padding:12px 12px; border:1px solid #cfd8e3; border-radius:10px; margin:8px 0 16px; font-size:15px;}
-  textarea{resize:vertical;}
-  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border:none; border-radius:12px; cursor:pointer; font-weight:600; transition:transform .08s ease, box-shadow .2s ease; box-shadow:0 1px 0 rgba(0,0,0,.04);} .btn:active{transform:translateY(1px);} 
-  .btn-primary{background:var(--primary); color:#fff;} .btn-primary:hover{background:var(--primary-2);} 
-  .btn-accent{background:var(--accent); color:#fff;} .btn-accent:hover{filter:brightness(1.05);} 
-  .btn-muted{background:#e5e7eb;} .btn-muted:hover{background:#dfe3e8;}
-  .btn-danger{background:var(--danger); color:#fff;} .btn-danger:hover{filter:brightness(1.05);} 
-  .inline {display:flex; gap:10px;}
-  .error{color:#b42318; min-height:18px; font-size:14px; margin-top:-8px; margin-bottom:8px;}
-  .link{color:var(--accent); font-weight:600; cursor:pointer;}
-  .small{font-size:13px; color:#6b7280;}
-
-  /* Layout */
-  .app{display:none; min-height:100vh;}
-  .topbar{position:sticky; top:0; z-index:5; background:#ffffffd9; backdrop-filter:saturate(1.3) blur(8px); box-shadow:0 1px 0 #e5e7eb;}
-  .topbar-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:12px 16px;}
-  .brand{font-weight:800; color:var(--primary); letter-spacing:.2px;}
-  .user-pill{display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f3f4f6; border-radius:999px;}
-  .user-pill img{width:28px; height:28px; border-radius:50%; object-fit:cover;}
-
-  .wrap{max-width:1200px; margin:22px auto; padding:0 12px; display:grid; grid-template-columns:240px 1fr; gap:16px;}
-  .sidebar{background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:14px; height:max-content;}
-  .nav a{display:block; padding:10px 12px; border-radius:10px; color:#111827; text-decoration:none; font-weight:600; transition:background .2s ease, color .2s ease;}
-  .nav a:hover, .nav a.active{background:#ecfdf3; color:#065f46;}
-  .content{min-height:60vh;}
-
-  .panel{background:#fff; border-radius:16px; box-shadow:var(--shadow); padding:18px; margin-bottom:16px;}
-  .grid{display:grid; gap:14px;} .grid-3{grid-template-columns:repeat(3,1fr);} .grid-2{grid-template-columns:repeat(2,1fr);} 
-  @media (max-width:900px){ .wrap{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} .grid-2{grid-template-columns:1fr;} }
-
-  /* Table */
-  table{width:100%; border-collapse:collapse;}
-  th, td{border-bottom:1px solid #eef2f7; padding:10px; text-align:left; font-size:14px;}
-  th{background:#f8fafc;}
-  tr:last-child td{border-bottom:none;}
-
-  /* Chart */
-  #chartWrap{width:min(520px, 100%); height:300px;}
-  #empPie{width:100% !important; height:100% !important;}
-
-  /* Tag */
-  .tag{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700;}
-  .tag-pending{background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;}
-  .tag-approved{background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;}
-  .tag-rejected{background:#fef2f2; color:#991b1b; border:1px solid #fecaca;}
-
-  /* Hidden util */
-  .hidden{display:none !important;}
-</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Leafy • Leave Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --primary:#1e9c55; --primary-2:#2bc06d; --accent:#0d6efd; --danger:#dc3545;
+    --muted:#e6eef0; --text:#0f172a;
+    --panel: rgba(255,255,255,0.95); --shadow: 0 12px 30px rgba(2,6,23,0.08);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(135deg,#eef6f2,#f3f6fb)}
+  a{color:inherit;text-decoration:none}
+  /* =========== Welcome =========== */
+  #welcome{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;text-align:center;z-index:40}
+  .welcome-card{width:980px;max-width:94%;background:linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.86));border-radius:18px;padding:44px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+  .welcome-title{font-size:2.4rem;margin:0 0 10px;color:var(--primary);font-weight:800}
+  .welcome-sub{color:#334155;font-size:1.05rem;margin:0 0 14px;line-height:1.45}
+  .loading-text{display:inline-block;margin-top:12px;padding-right:14px;border-right:2px solid rgba(51,65,85,0.7);white-space:nowrap;overflow:hidden;animation:typing 3.2s steps(40,end) forwards, blink .8s infinite;font-weight:600;color:#475569}
+  @keyframes typing{from{width:0}to{width:100%}} @keyframes blink{50%{border-color:transparent}}
+  #welcome-login{position:fixed;right:20px;top:18px;padding:10px 14px;border-radius:10px;background:var(--accent);color:#fff;border:none;font-weight:700;cursor:pointer;z-index:50}
+  #welcome-login:hover{transform:scale(1.03)}
+  /* =========== Shared =========== */
+  .center-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:22px}
+  .card{width:420px;max-width:96vw;background:var(--panel);border-radius:14px;padding:26px;box-shadow:var(--shadow);backdrop-filter: blur(6px)}
+  h1{margin:0 0 14px;color:var(--primary)}
+  label{font-weight:600;font-size:14px}
+  input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(15,23,42,0.06);margin:8px 0 14px;font-size:14px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:700;transition:all .14s}
+  .btn-primary{background:linear-gradient(90deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 8px 24px rgba(30,156,85,0.12)}
+  .btn-muted{background:#f3f4f6;color:#111827}
+  .btn-accent{background:var(--accent);color:#fff}
+  .btn-danger{background:var(--danger);color:#fff}
+  .inline{display:flex;gap:10px}
+  .small{font-size:13px;color:#6b7280}
+  .error{color:#b42318;min-height:18px}
+  .hidden{display:none!important}
+  /* =========== App layout =========== */
+  .app{display:none;min-height:100vh;transition:opacity .3s}
+  .topbar{position:sticky;top:0;background:rgba(255,255,255,0.9);backdrop-filter:blur(6px);box-shadow:0 1px 0 rgba(2,6,23,0.04);z-index:20}
+  .topbar-inner{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{font-weight:800;color:var(--primary)}
+  .user-pill{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:999px;background:rgba(15,23,42,0.04)}
+  .user-pill img{width:36px;height:36px;border-radius:8px;object-fit:cover}
+  .wrap{max-width:1200px;margin:20px auto;padding:0 12px;display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:start}
+  .sidebar{background:var(--panel);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+  .nav a{display:block;padding:10px;border-radius:8px;color:#0b1220;font-weight:700;margin-bottom:6px}
+  .nav a.active,.nav a:hover{background:linear-gradient(90deg, rgba(30,156,85,0.08), rgba(13,110,253,0.04));color:var(--primary)}
+  .panel{background:var(--panel);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:12px}
+  .grid-2{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr} .grid-2,.grid-3{grid-template-columns:1fr} }
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px;border-bottom:1px solid rgba(2,6,23,0.04);text-align:left}
+  th{background:rgba(255,255,255,0.7);font-weight:700}
+  .tag{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px}
+  .tag-pending{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+  .tag-approved{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+  .tag-rejected{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  /* toast */
+  #toastWrap{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+  .toast{background:#07102a;color:white;padding:10px 14px;border-radius:10px;box-shadow:0 8px 24px rgba(2,6,23,0.4)}
+</style>
 </head>
 <body>
 
-<!-- ============== AUTH SCREENS ============== -->
-<div id="auth" class="center-wrap">
-  <div class="card" id="signupCard">
-    <h1>Create Account</h1>
-    <div class="error" id="signupErr"></div>
-    <label>Email</label>
-    <input id="suEmail" type="email" placeholder="you@company.com"/>
-    <label>Password</label>
-    <input id="suPass" type="password" placeholder="Min 8 characters"/>
-    <label>Role</label>
-    <select id="suRole">
-      <option value="Employee">Employee</option>
-      <option value="Admin">Admin</option>
-      <option value="HR">HR</option>
-      <option value="Finance">Finance</option>
-      <option value="IT">IT</option>
-      <option value="Teacher">Teacher</option>
-    </select>
-    <div class="inline">
-      <button class="btn btn-primary" onclick="handleSignup()">Create</button>
-      <button class="btn btn-muted" onclick="showLogin()">I already have an account</button>
-    </div>
-  </div>
+<!-- Toast container -->
+<div id="toastWrap"></div>
 
-  <div class="card hidden" id="loginCard">
-    <h1>Login</h1>
-    <div class="error" id="loginErr"></div>
-    <label>Email</label>
-    <input id="liEmail" type="email" placeholder="you@company.com"/>
-    <label>Password</label>
-    <input id="liPass" type="password" placeholder="Your password"/>
-    <div class="inline">
-      <button class="btn btn-primary" onclick="handleLogin()">Login</button>
-      <button class="btn btn-muted" onclick="showSignup()">Create account</button>
-    </div>
-    <p class="small">Forgot your password? <span class="link" onclick="showForgot()">Reset via email</span></p>
-  </div>
-
-  <div class="card hidden" id="forgotCard">
-    <h1>Reset Password</h1>
-    <div class="error" id="forgotErr"></div>
-    <label>Enter your email</label>
-    <input id="fpEmail" type="email" placeholder="you@company.com"/>
-    <button class="btn btn-accent" onclick="handleForgot()">Send reset link</button>
-    <p class="small">(Demo) A reset token will appear on screen.
-      <br/>Use it below to set a new password.
-    </p>
-    <div id="resetDemo" class="hidden">
-      <label>Paste token</label>
-      <input id="resetToken" placeholder="Paste token here" />
-      <label>New password</label>
-      <input id="resetPass" type="password" placeholder="Min 8 characters"/>
-      <button class="btn btn-primary" onclick="handleReset()">Update Password</button>
-    </div>
-    <button class="btn btn-muted" style="margin-top:8px" onclick="showLogin()">Back to Login</button>
-  </div>
-</div>
-
-<!-- ============== APP LAYOUT ============== -->
-<div id="app" class="app">
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">Leafy • Leave Management</div>
-      <div class="user-pill">
-        <img id="userAvatar" src="" alt="avatar"/>
-        <div>
-          <div id="userEmail" style="font-weight:700"></div>
-          <div id="userRole" class="small"></div>
+<!-- Welcome -->
+<section id="welcome" aria-hidden="false">
+  <div class="welcome-card">
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+      <div style="flex:1 1 520px">
+        <div class="welcome-title">🌿 Leafy • Leave Management</div>
+        <p class="welcome-sub">Simplify leave applications, approvals and reporting — a clean, modern leave management demo for your capstone.</p>
+        <div class="loading-text" id="welcomeLoading">Loading system modules...</div>
+        <div style="margin-top:18px">
+          <button class="btn btn-primary" id="ctaStart">Get started</button>
+          <button class="btn btn-muted" onclick="openDocs()">Learn more</button>
         </div>
-        <button class="btn btn-muted" onclick="logout()">Logout</button>
+      </div>
+      <div style="width:260px">
+        <div style="background:linear-gradient(160deg,#fff,#f6fffb);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.04)">
+          <strong>Demo accounts</strong>
+          <div style="margin-top:8px;color:#475569;font-size:13px">
+            admin@demo.com / Admin@123<br>
+            hr@demo.com / Hr@12345<br>
+            emp@demo.com / Emp@12345
+          </div>
+        </div>
       </div>
     </div>
   </div>
+  <button id="welcome-login" title="Login" style="position:fixed;right:20px;top:18px;padding:10px 14px;border-radius:10px;background:var(--accent);color:#fff;border:none;font-weight:700;cursor:pointer;z-index:60">Login</button>
+</section>
+
+<!-- AUTH -->
+<section id="auth" class="center-wrap hidden" aria-hidden="true">
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;justify-content:center;max-width:980px;padding:10px">
+    <div class="card" id="signupCard">
+      <h1>Create Account</h1>
+      <div class="error" id="signupErr"></div>
+      <label>Email</label><input id="suEmail" type="email" placeholder="you@company.com"/>
+      <label>Password</label><input id="suPass" type="password" placeholder="Min 6 characters"/>
+      <label>Role</label>
+      <select id="suRole"><option>Employee</option><option>Admin</option><option>HR</option><option>Finance</option><option>IT</option><option>Teacher</option></select>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary" id="btnSignup">Create</button>
+        <button class="btn btn-muted" id="gotoLogin">I have an account</button>
+      </div>
+      <div class="small" style="margin-top:12px;color:#475569">You can create an account to apply leaves, update your profile and view your history.</div>
+    </div>
+
+    <div class="card hidden" id="loginCard">
+      <h1>Login</h1>
+      <div class="error" id="loginErr"></div>
+      <label>Email</label><input id="liEmail" type="email" placeholder="you@company.com"/>
+      <label>Password</label><input id="liPass" type="password" placeholder="Your password"/>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" id="btnLogin">Login</button>
+        <button class="btn btn-muted" id="gotoSignup">Create account</button>
+      </div>
+      <p class="small" style="margin-top:10px">Forgot your password? <span class="link" id="gotoForgot">Reset via email</span></p>
+    </div>
+
+    <div class="card hidden" id="forgotCard">
+      <h1>Reset Password</h1>
+      <div class="error" id="forgotErr"></div>
+      <label>Enter your email</label><input id="fpEmail" type="email" placeholder="you@company.com"/>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-accent" id="btnForgot">Send reset link</button>
+        <button class="btn btn-muted" id="cancelForgot">Cancel</button>
+      </div>
+
+      <div id="resetDemo" class="hidden" style="margin-top:12px">
+        <label>Reset token (demo)</label><input id="resetToken" placeholder="Paste token here" />
+        <label>New password</label><input id="resetPass" type="password" placeholder="New password" />
+        <div style="margin-top:8px"><button class="btn btn-primary" id="btnReset">Update Password</button></div>
+      </div>
+      <div class="small" style="margin-top:10px;color:#475569">In demo mode the token may be returned in the API response for convenience.</div>
+    </div>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="app" class="app" aria-hidden="true" style="display:none">
+  <div class="topbar"><div class="topbar-inner">
+    <div class="brand">Leafy • Leave Management</div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="user-pill" id="headerUser" style="display:none">
+        <img id="userAvatar" src="" alt="Avatar">
+        <div style="text-align:left">
+          <div id="userEmail" style="font-weight:700"></div>
+          <div id="userRole" class="small"></div>
+        </div>
+      </div>
+      <button class="btn btn-muted" id="logoutBtn" style="display:none">Logout</button>
+    </div>
+  </div></div>
+
   <div class="wrap">
     <aside class="sidebar">
       <nav class="nav" id="sideNav">
@@ -156,27 +176,61 @@
       </nav>
     </aside>
 
-    <main class="content">
+    <main>
+      <!-- small auth area (in-app quick login/signup) -->
+      <div id="authArea" class="panel" style="max-width:760px;margin-bottom:18px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1 1 320px;">
+            <h3>Sign in</h3>
+            <div class="small">Existing users</div>
+            <input id="liEmailMini" placeholder="email" type="email">
+            <input id="liPassMini" placeholder="password" type="password">
+            <div style="display:flex;gap:10px;margin-top:8px;">
+              <button class="btn btn-primary" id="btnLoginMini">Login</button>
+              <button class="btn btn-muted" id="showSignup">Create account</button>
+            </div>
+            <div style="margin-top:8px" class="small">Forgot password? <a href="#" id="showForgotMini">Reset</a></div>
+            <div id="loginErrMini" class="error"></div>
+          </div>
+
+          <div style="flex:1 1 320px;">
+            <h3>Create account</h3>
+            <div class="small">New users</div>
+            <input id="suEmailMini" placeholder="email" type="email">
+            <input id="suPassMini" placeholder="password" type="password">
+            <select id="suRoleMini" style="margin-top:8px">
+              <option>Employee</option><option>Admin</option><option>HR</option>
+            </select>
+            <div style="display:flex;gap:10px;margin-top:8px">
+              <button class="btn btn-primary" id="btnSignupMini">Create</button>
+            </div>
+            <div id="signupErrMini" class="error"></div>
+          </div>
+        </div>
+
+        <div id="forgotBox" style="margin-top:18px; display:none;">
+          <h3>Reset Password</h3>
+          <div class="small">Enter your email and we will send a reset token</div>
+          <input id="fpEmailMini" placeholder="email" type="email">
+          <div style="margin-top:8px;display:flex;gap:10px">
+            <button class="btn btn-primary" id="btnForgotMini">Send Reset Email</button>
+            <button class="btn btn-outline" id="cancelForgotMini">Cancel</button>
+          </div>
+          <div id="forgotMsgMini" class="small" style="margin-top:8px"></div>
+        </div>
+      </div>
+
       <!-- DASHBOARD -->
       <section id="screen-dashboard" class="panel">
         <h2>Dashboard</h2>
-        <div class="grid grid-3" style="margin-top:8px">
-          <div class="panel">
-            <h3>Total Employees</h3>
-            <div id="cardEmployees" style="font-size:28px; font-weight:800;">0</div>
-          </div>
-          <div class="panel">
-            <h3>Pending Leaves</h3>
-            <div id="cardPending" style="font-size:28px; font-weight:800;">0</div>
-          </div>
-          <div class="panel">
-            <h3>My Pending</h3>
-            <div id="cardMyPending" style="font-size:28px; font-weight:800;">0</div>
-          </div>
+        <div class="grid grid-3" style="margin-top:12px">
+          <div class="panel"><h4>Total Employees</h4><div id="cardEmployees" style="font-size:28px;font-weight:800">0</div></div>
+          <div class="panel"><h4>Pending Leaves</h4><div id="cardPending" style="font-size:28px;font-weight:800">0</div></div>
+          <div class="panel"><h4>My Pending</h4><div id="cardMyPending" style="font-size:28px;font-weight:800">0</div></div>
         </div>
-        <div class="panel" style="margin-top:12px;">
-          <h3>My Leaves: This Month</h3>
-          <div id="chartWrap"><canvas id="empPie"></canvas></div>
+        <div class="panel" style="margin-top:12px">
+          <h4>My Leaves: This Month</h4>
+          <div id="chartWrap" style="width:min(520px,100%);height:300px"><canvas id="empPie"></canvas></div>
         </div>
       </section>
 
@@ -187,66 +241,48 @@
         <div class="grid grid-2">
           <div>
             <label>Leave Type</label>
-            <select id="lvType">
-              <option value="">Select</option>
-              <option>Casual</option>
-              <option>Sick</option>
-              <option>Emergency</option>
-              <option>Earned</option>
-            </select>
+            <select id="lvType"><option value="">Select</option><option>Casual</option><option>Sick</option><option>Emergency</option><option>Earned</option></select>
           </div>
           <div>
             <label>Days</label>
-            <input type="number" id="lvDays" min="1" max="30" placeholder="e.g., 2"/>
+            <input id="lvDays" type="number" min="1" max="30" placeholder="e.g., 2">
           </div>
         </div>
         <label>Reason</label>
-        <textarea id="lvReason" rows="3" placeholder="Optional"></textarea>
-        <button class="btn btn-primary" onclick="submitLeave()">Submit</button>
-        <div class="panel" style="margin-top:14px;">
-          <h3>My Recent Requests</h3>
-          <table>
-            <thead><tr><th>Date</th><th>Type</th><th>Days</th><th>Status</th></tr></thead>
-            <tbody id="myLeavesTbody"></tbody>
-          </table>
+        <textarea id="lvReason" rows="3"></textarea>
+        <div style="margin-top:8px"><button class="btn btn-primary" id="btnSubmitLeave">Submit</button></div>
+        <div class="panel" style="margin-top:12px">
+          <h4>My Recent Requests</h4>
+          <table><thead><tr><th>Date</th><th>Type</th><th>Days</th><th>Status</th></tr></thead><tbody id="myLeavesTbody"></tbody></table>
         </div>
       </section>
 
-      <!-- APPROVALS (for roles with permission) -->
+      <!-- APPROVALS -->
       <section id="screen-approvals" class="panel hidden">
         <h2>Approvals</h2>
-        <div class="small" id="apprInfo"></div>
-        <table style="margin-top:10px;">
-          <thead><tr><th>Employee</th><th>Type</th><th>Days</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody id="apprTbody"></tbody>
-        </table>
+        <div id="apprInfo" class="small"></div>
+        <table style="margin-top:10px"><thead><tr><th>Employee</th><th>Type</th><th>Days</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead><tbody id="apprTbody"></tbody></table>
       </section>
 
-      <!-- REPORTING OFFICERS -->
+      <!-- REPORTING -->
       <section id="screen-reporting" class="panel hidden">
         <h2>Assign Reporting Officers</h2>
-        <div class="small">Select an officer for each employee. (Stored locally for demo)</div>
-        <table style="margin-top:10px;">
-          <thead><tr><th>Employee</th><th>Role</th><th>Reporting Officer</th></tr></thead>
-          <tbody id="reportingTbody"></tbody>
-        </table>
+        <div class="small">Select an officer for each employee.</div>
+        <table style="margin-top:10px"><thead><tr><th>Employee</th><th>Role</th><th>Reporting Officer</th></tr></thead><tbody id="reportingTbody"></tbody></table>
+        <div style="margin-top:10px"><button class="btn btn-primary" id="btnSaveReporting">Save Assignments</button></div>
       </section>
 
-      <!-- ADMIN CONTROL PANEL -->
+      <!-- ADMIN -->
       <section id="screen-admin" class="panel hidden">
         <h2>Admin Control Panel</h2>
         <div class="panel">
-          <h3>Role Permissions</h3>
-          <div class="small">Toggle which actions a role can perform.</div>
-          <div id="permMatrix"></div>
-          <button class="btn btn-primary" style="margin-top:10px;" onclick="savePerms()">Save Permissions</button>
+          <h4>Role Permissions</h4>
+          <div id="permMatrix" class="small"></div>
+          <div style="margin-top:10px"><button class="btn btn-primary" id="btnSavePerms">Save Permissions</button></div>
         </div>
-        <div class="panel">
-          <h3>Users</h3>
-          <table>
-            <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-            <tbody id="usersTbody"></tbody>
-          </table>
+        <div class="panel" style="margin-top:12px">
+          <h4>Users</h4>
+          <table><thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody id="usersTbody"></tbody></table>
         </div>
       </section>
 
@@ -256,167 +292,213 @@
         <div class="grid grid-2">
           <div>
             <label>Photo</label>
-            <input id="pfPhoto" type="file" accept="image/*" />
-            <img id="pfPreview" src="" alt="preview" style="margin-top:10px; width:120px; height:120px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow);"/>
+            <input id="pfPhoto" type="file" accept="image/*">
+            <img id="pfPreview" src="" style="width:120px;height:120px;border-radius:12px;object-fit:cover;margin-top:8px" alt="">
           </div>
           <div>
-            <label>Full Name</label>
-            <input id="pfName" placeholder="Your name"/>
+            <label>Full name</label>
+            <input id="pfName">
             <label>Phone</label>
-            <input id="pfPhone" placeholder="+91 9XXXXXXXXX"/>
+            <input id="pfPhone">
             <label>Address</label>
-            <textarea id="pfAddr" rows="3" placeholder="Address"></textarea>
+            <textarea id="pfAddr" rows="3"></textarea>
+            <div style="margin-top:8px"><button class="btn btn-primary" id="btnSaveProfile">Save Profile</button></div>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
       </section>
+
     </main>
   </div>
-</div>
+</section>
 
 <script>
-/**********************
- * UTILITIES & STORAGE
- **********************/
-const LS = {
-  users: 'lms_users',
-  leaves: 'lms_leaves',
-  session: 'lms_session',
-  perms: 'lms_perms'
-};
-
-const DEFAULT_PERMISSIONS = {
-  Admin:   ['approve_leave','assign_reporting','manage_permissions','view_dashboard','apply_leave','manage_users'],
-  HR:      ['approve_leave','assign_reporting','view_dashboard','apply_leave'],
-  Finance: ['view_dashboard'],
-  IT:      ['view_dashboard'],
-  Teacher: ['apply_leave','view_dashboard'],
-  Employee:['apply_leave','view_dashboard']
-};
-
-const TOTAL_LEAVES_PER_YEAR = 24; // demo value
-
-function readLS(key, fallback){ try { return JSON.parse(localStorage.getItem(key)) ?? structuredClone(fallback); } catch { return structuredClone(fallback); } }
-function writeLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
-
-// Simple SHA-256 (demo only – real apps use bcrypt/argon2 on server)
-async function sha256(str){ const enc = new TextEncoder().encode(str); const buf = await crypto.subtle.digest('SHA-256', enc); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
-
-function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
-
-function nowISO(){ return new Date().toISOString(); }
-function thisMonthKey(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
-
-/**********************
- * AUTH SCREENS
- **********************/
-function showLogin(){ document.getElementById('signupCard').classList.add('hidden'); document.getElementById('forgotCard').classList.add('hidden'); document.getElementById('loginCard').classList.remove('hidden'); }
-function showSignup(){ document.getElementById('loginCard').classList.add('hidden'); document.getElementById('forgotCard').classList.add('hidden'); document.getElementById('signupCard').classList.remove('hidden'); }
-function showForgot(){ document.getElementById('loginCard').classList.add('hidden'); document.getElementById('signupCard').classList.add('hidden'); document.getElementById('forgotCard').classList.remove('hidden'); }
-
-async function handleSignup(){
-  const email = document.getElementById('suEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('suPass').value;
-  const role = document.getElementById('suRole').value;
-  const err = document.getElementById('signupErr');
-  err.textContent = '';
-  if(!email || !pass){ err.textContent='Email and password are required.'; return; }
-  if(pass.length < 8){ err.textContent='Password must be at least 8 characters.'; return; }
-  let users = readLS(LS.users, []);
-  if(users.some(u=>u.email===email)){ err.textContent='Email already registered.'; return; }
-  const passHash = await sha256(pass);
-  const user = { id: uid(), email, passHash, role, profile:{name:'', phone:'', address:'', photo:''}, reportingOfficerId: null, resetToken:null };
-  users.push(user); writeLS(LS.users, users);
-  alert('Account created. Please login.'); showLogin();
-}
-
-async function handleLogin(){
-  const email = document.getElementById('liEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('liPass').value;
-  const err = document.getElementById('loginErr');
-  err.textContent = '';
-  const users = readLS(LS.users, []);
-  const user = users.find(u=>u.email===email);
-  if(!user){ err.textContent='Invalid credentials.'; return; }
-  const passHash = await sha256(pass);
-  if(passHash !== user.passHash){ err.textContent='Invalid credentials.'; return; }
-  writeLS(LS.session, { userId: user.id });
-  startApp();
-}
-
-function logout(){ localStorage.removeItem(LS.session); location.reload(); }
-
-// Forgot / Reset (demo: shows token instead of sending email)
-function handleForgot(){
-  const email = document.getElementById('fpEmail').value.trim().toLowerCase();
-  const err = document.getElementById('forgotErr'); err.textContent='';
-  let users = readLS(LS.users, []);
-  const idx = users.findIndex(u=>u.email===email);
-  if(idx===-1){ err.textContent = 'No account found for this email.'; return; }
-  const token = uid();
-  users[idx].resetToken = { token, exp: Date.now() + 1000*60*15 }; // 15 min
-  writeLS(LS.users, users);
-  const box = document.getElementById('resetDemo');
-  box.classList.remove('hidden');
-  box.querySelector('#resetToken').value = token;
-  alert('Demo: A reset token has been generated and displayed.');
-}
-
-async function handleReset(){
-  const token = document.getElementById('resetToken').value.trim();
-  const newPass = document.getElementById('resetPass').value;
-  const err = document.getElementById('forgotErr'); err.textContent='';
-  if(newPass.length<8){ err.textContent='Password must be at least 8 characters.'; return; }
-  let users = readLS(LS.users, []);
-  const idx = users.findIndex(u=>u.resetToken && u.resetToken.token===token);
-  if(idx===-1){ err.textContent='Invalid token.'; return; }
-  if(Date.now()>users[idx].resetToken.exp){ err.textContent='Token expired.'; return; }
-  users[idx].passHash = await sha256(newPass);
-  users[idx].resetToken = null;
-  writeLS(LS.users, users);
-  alert('Password updated. Please login.');
-  showLogin();
-}
-
-/**********************
- * APP INIT & NAV
- **********************/
-let CURRENT_USER = null; // object
+/* ================= CONFIG ================= */
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:5000/api' : '/api';
+const authTokenKey = 'lms_token';
+let CURRENT_USER = null;
 let PERMS = {};
 let pieChart = null;
 
-function startApp(){
-  // Load session & user
-  const sess = readLS(LS.session, null); if(!sess){ return; }
-  const users = readLS(LS.users, []);
-  const user = users.find(u=>u.id===sess.userId); if(!user){ return; }
-  CURRENT_USER = user;
+/* ================= HELPERS ================= */
+function toast(msg, t=2600){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div'); el.className='toast'; el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, t);
+}
+const $ = sel => document.querySelector(sel);
 
-  // Load or bootstrap permissions
-  PERMS = readLS(LS.perms, null) || structuredClone(DEFAULT_PERMISSIONS);
-  writeLS(LS.perms, PERMS);
+/* API wrapper */
+async function api(path, opts = {}){
+  const headers = opts.headers || {};
+  if(!headers['Content-Type']) headers['Content-Type'] = 'application/json';
+  const token = localStorage.getItem(authTokenKey);
+  if(token) headers['Authorization'] = 'Bearer ' + token;
+  opts.headers = headers;
+  try {
+    const res = await fetch(API_BASE + path, opts);
+    const json = await res.json().catch(()=>({}));
+    return { status: res.status, data: json };
+  } catch (e) {
+    return { status: 0, data: { ok:false, msg:'Network error' } };
+  }
+}
 
-  // Show app
-  document.getElementById('auth').style.display='none';
-  document.getElementById('app').style.display='block';
-  // Header details
-  document.getElementById('userEmail').textContent = CURRENT_USER.email;
-  document.getElementById('userRole').textContent = CURRENT_USER.role;
-  document.getElementById('userAvatar').src = CURRENT_USER.profile.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(CURRENT_USER.email)}`;
+/* UI helpers */
+function show(el){ el.classList.remove('hidden'); el.style.display = el.dataset.inline === 'flex' ? 'flex' : 'block'; }
+function hide(el){ el.classList.add('hidden'); el.style.display = 'none'; }
 
-  // Sidebar visibility based on permissions
-  const navEl = document.getElementById('sideNav');
-  [...navEl.querySelectorAll('a')].forEach(a=>{
-    const route = a.dataset.route;
+/* ============== Welcome -> Auth ============== */
+document.getElementById('welcome-login').addEventListener('click', openAuth);
+document.getElementById('ctaStart').addEventListener('click', openAuth);
+function openDocs(){ window.open('https://en.wikipedia.org/wiki/Leave_of_absence','_blank'); }
+function openAuth(){
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('auth').classList.remove('hidden');
+  document.getElementById('auth').style.display = 'flex';
+  showLogin();
+  window.scrollTo(0,0);
+}
+
+/* ============== Auth UI binds ============== */
+$('#gotoLogin').addEventListener('click', ()=>{ $('#signupCard').classList.add('hidden'); $('#loginCard').classList.remove('hidden'); });
+$('#gotoSignup').addEventListener('click', ()=>{ $('#loginCard').classList.add('hidden'); $('#signupCard').classList.remove('hidden'); });
+$('#gotoForgot').addEventListener('click', ()=>{ $('#loginCard').classList.add('hidden'); $('#forgotCard').classList.remove('hidden'); });
+$('#cancelForgot').addEventListener('click', ()=>{ $('#forgotCard').classList.add('hidden'); $('#loginCard').classList.remove('hidden'); });
+
+function showLogin(){ $('#signupCard').classList.add('hidden'); $('#forgotCard').classList.add('hidden'); $('#loginCard').classList.remove('hidden'); }
+function showSignup(){ $('#loginCard').classList.add('hidden'); $('#forgotCard').classList.add('hidden'); $('#signupCard').classList.remove('hidden'); }
+function showForgot(){ $('#loginCard').classList.add('hidden'); $('#signupCard').classList.add('hidden'); $('#forgotCard').classList.remove('hidden'); }
+
+/* ============== Auth actions ============== */
+/* Signup */
+$('#btnSignup').addEventListener('click', async ()=>{
+  $('#signupErr').textContent = '';
+  const email = $('#suEmail').value.trim().toLowerCase();
+  const pass = $('#suPass').value;
+  const role = $('#suRole').value;
+  if(!email || !pass){ $('#signupErr').textContent='Email and password required'; return; }
+  const {status, data} = await api('/signup', { method:'POST', body: JSON.stringify({ email, password: pass, role }) });
+  if((status===200 && data.ok) || status===201){ toast('Account created — please login'); $('#suEmail').value=''; $('#suPass').value=''; showLogin(); }
+  else $('#signupErr').textContent = data.msg || 'Error';
+});
+
+/* Login */
+$('#btnLogin').addEventListener('click', async ()=>{
+  $('#loginErr').textContent = '';
+  const email = $('#liEmail').value.trim().toLowerCase();
+  const pass = $('#liPass').value;
+  const {status, data} = await api('/login', { method:'POST', body: JSON.stringify({ email, password: pass }) });
+  if(status===200 && data.ok){
+    localStorage.setItem(authTokenKey, data.access_token);
+    CURRENT_USER = data.user;
+    afterLogin();
+    toast('Welcome back');
+  } else {
+    $('#loginErr').textContent = data.msg || 'Login failed';
+  }
+});
+
+/* Forgot */
+$('#btnForgot').addEventListener('click', async ()=>{
+  $('#forgotErr').textContent = '';
+  const email = $('#fpEmail').value.trim().toLowerCase();
+  const {status, data} = await api('/forgot', { method:'POST', body: JSON.stringify({ email }) });
+  if(status===200 && data.ok){
+    if(data.reset_token){ $('#resetToken').value = data.reset_token; $('#resetDemo').classList.remove('hidden'); }
+    $('#resetDemo').classList.remove('hidden');
+    toast('Reset token created (demo)');
+  } else {
+    $('#forgotErr').textContent = data.msg || 'Error sending reset';
+  }
+});
+
+/* Reset */
+$('#btnReset').addEventListener('click', async ()=>{
+  $('#forgotErr').textContent = '';
+  const token = $('#resetToken').value.trim();
+  const pw = $('#resetPass').value;
+  const {status, data} = await api('/reset', { method:'POST', body: JSON.stringify({ token, password: pw }) });
+  if(status===200 && data.ok){ toast('Password updated'); $('#resetDemo').classList.add('hidden'); showLogin(); }
+  else $('#forgotErr').textContent = data.msg || 'Reset failed';
+});
+
+/* Mini auth area buttons */
+$('#btnSignupMini')?.addEventListener('click', async ()=>{
+  const email = $('#suEmailMini').value.trim().toLowerCase(), pass = $('#suPassMini').value, role = $('#suRoleMini').value;
+  if(!email||!pass){ $('#signupErrMini').textContent='Email and password required'; return; }
+  const {status,data} = await api('/signup', { method:'POST', body: JSON.stringify({ email, password: pass, role }) });
+  if((status===200 && data.ok) || status===201){ toast('Account created — login'); $('#suEmailMini').value=''; $('#suPassMini').value=''; } else $('#signupErrMini').textContent = data.msg || 'Error';
+});
+$('#btnLoginMini')?.addEventListener('click', ()=> $('#btnLogin').click());
+$('#btnForgotMini')?.addEventListener('click', async ()=>{
+  const email = $('#fpEmailMini').value.trim().toLowerCase();
+  const {status,data} = await api('/forgot', { method:'POST', body: JSON.stringify({ email }) });
+  if(status===200 && data.ok){ $('#forgotMsgMini').textContent='Reset email sent'; if(data.reset_token){ $('#resetToken').value = data.reset_token; $('#resetDemo').classList.remove('hidden'); } } else $('#forgotMsgMini').textContent = data.msg || 'Error';
+});
+$('#showSignup').addEventListener('click', ()=>{ $('#suEmailMini').focus(); });
+$('#showForgotMini').addEventListener('click', ()=>{ $('#forgotBox').style.display='block'; });
+
+/* ============== After login ============== */
+async function afterLogin(){
+  // fetch me (ensure freshest)
+  const me = await api('/me', { method:'GET' });
+  if(me.status===200 && me.data.ok) CURRENT_USER = me.data.user || CURRENT_USER;
+  if(!CURRENT_USER){ toast('Failed to load user'); return; }
+  // hide auth/welcome, show app
+  $('#auth').classList.add('hidden'); $('#welcome').classList.add('hidden');
+  $('#app').style.display = 'block';
+  $('#headerUser').style.display = 'flex'; $('#logoutBtn').style.display = 'inline-flex';
+  $('#userEmail').textContent = CURRENT_USER.email; $('#userRole').textContent = CURRENT_USER.role;
+  $('#userAvatar').src = CURRENT_USER.profile?.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(CURRENT_USER.email)}`;
+  await loadPermissionsAndRender();
+  await loadAllForUser();
+}
+
+/* On initial boot: check token */
+(async function boot(){
+  const token = localStorage.getItem(authTokenKey);
+  if(token){
+    const me = await api('/me', { method:'GET' });
+    if(me.status===200 && me.data.ok){ CURRENT_USER = me.data.user; afterLogin(); return; }
+    localStorage.removeItem(authTokenKey);
+  }
+  // show welcome (default)
+})();
+
+/* ============== Permissions & nav ============== */
+async function loadPermissionsAndRender(){
+  const {status, data} = await api('/permissions', { method:'GET' });
+  if(status===200 && data.ok) PERMS = data.perms || {};
+  else PERMS = { Admin:['approve_leave','assign_reporting','manage_permissions','view_dashboard','apply_leave','manage_users'], HR:['approve_leave','assign_reporting','view_dashboard','apply_leave'], Employee:['apply_leave','view_dashboard'] };
+  document.querySelectorAll('#sideNav a').forEach(a=>{
+    const r = a.dataset.route;
     let allowed = true;
-    if(route==='leave') allowed = PERMS[CURRENT_USER.role]?.includes('apply_leave');
-    if(route==='approvals') allowed = PERMS[CURRENT_USER.role]?.includes('approve_leave');
-    if(route==='reporting') allowed = PERMS[CURRENT_USER.role]?.includes('assign_reporting');
-    if(route==='admin') allowed = PERMS[CURRENT_USER.role]?.includes('manage_permissions');
+    if(r==='leave') allowed = (PERMS[CURRENT_USER.role]||[]).includes('apply_leave');
+    if(r==='approvals') allowed = (PERMS[CURRENT_USER.role]||[]).includes('approve_leave');
+    if(r==='reporting') allowed = (PERMS[CURRENT_USER.role]||[]).includes('assign_reporting');
+    if(r==='admin') allowed = (PERMS[CURRENT_USER.role]||[]).includes('manage_permissions');
     a.style.display = allowed ? 'block' : 'none';
   });
+}
 
-  // Load screens
+/* ============== Navigation ============== */
+window.nav = function nav(e){ e.preventDefault(); const target = e.currentTarget || e.target; const route = target.dataset.route; document.querySelectorAll('#sideNav a').forEach(a=>a.classList.remove('active')); target.classList.add('active'); showScreen(route); }
+function showScreen(route){
+  const screens = ['dashboard','leave','approvals','reporting','admin','profile'];
+  screens.forEach(r => { const el = document.getElementById('screen-'+r); if(el) el.classList.add('hidden'); });
+  document.getElementById('screen-'+route).classList.remove('hidden');
+  if(route==='dashboard') renderDashboard();
+  if(route==='leave') renderMyLeaves();
+  if(route==='approvals') renderApprovals();
+  if(route==='reporting') renderReporting();
+  if(route==='admin') renderAdmin();
+  if(route==='profile') renderProfile();
+}
+
+/* ============== Data loaders & UI ============== */
+async function loadAllForUser(){
+  await loadPermissionsAndRender();
   renderDashboard();
   renderMyLeaves();
   renderApprovals();
@@ -425,297 +507,142 @@ function startApp(){
   renderProfile();
 }
 
-function nav(e){ e.preventDefault(); const route = e.currentTarget.dataset.route; showScreen(route); [...e.currentTarget.parentElement.children].forEach(a=>a.classList.remove('active')); e.currentTarget.classList.add('active'); }
-
-function showScreen(route){
-  const map = ['dashboard','leave','approvals','reporting','admin','profile'];
-  for(const r of map){ document.getElementById(`screen-${r}`).classList.add('hidden'); }
-  document.getElementById(`screen-${route}`).classList.remove('hidden');
-  if(route==='dashboard'){ renderDashboard(); }
-  if(route==='leave'){ renderMyLeaves(); }
-  if(route==='approvals'){ renderApprovals(); }
-  if(route==='reporting'){ renderReporting(); }
-  if(route==='admin'){ renderAdmin(); }
-  if(route==='profile'){ renderProfile(); }
-}
-
-/**********************
- * DATA HELPERS
- **********************/
-function getLeaves(){ return readLS(LS.leaves, []); }
-function setLeaves(arr){ writeLS(LS.leaves, arr); }
-
-function getUsers(){ return readLS(LS.users, []); }
-function setUsers(arr){ writeLS(LS.users, arr); }
-
-/**********************
- * DASHBOARD
- **********************/
-function renderDashboard(){
-  const users = getUsers();
-  const leaves = getLeaves();
-  document.getElementById('cardEmployees').textContent = users.length;
-  const pending = leaves.filter(l=>l.status==='Pending').length;
-  document.getElementById('cardPending').textContent = pending;
-  const myPending = leaves.filter(l=>l.userId===CURRENT_USER.id && l.status==='Pending').length;
-  document.getElementById('cardMyPending').textContent = myPending;
-
-  // Pie for this month (my leaves)
-  const month = thisMonthKey();
-  const myMonthLeaves = leaves.filter(l=>l.userId===CURRENT_USER.id && l.month===month && l.status!=='Rejected');
-  const daysTaken = myMonthLeaves.reduce((s,l)=>s+l.days,0);
-  const monthlyQuota = 2; // demo: 2 days per month
+/* Dashboard */
+async function renderDashboard(){
+  const {status:us, data:ud} = await api('/users', { method:'GET' });
+  $('#cardEmployees').textContent = (us===200 && ud.ok) ? ud.users.length : '—';
+  const showAll = (PERMS[CURRENT_USER.role]||[]).includes('approve_leave') ? 'true' : 'false';
+  const {data:ld} = await api('/leaves?all='+showAll, { method:'GET' });
+  const leaves = (ld && ld.leaves) ? ld.leaves : [];
+  $('#cardPending').textContent = leaves.filter(l=>l.status==='Pending').length;
+  $('#cardMyPending').textContent = leaves.filter(l=>l.userId===CURRENT_USER.id && l.status==='Pending').length;
+  const myMonthLeaves = leaves.filter(l=>l.userId===CURRENT_USER.id && l.month===new Date().toISOString().slice(0,7) && l.status!=='Rejected');
+  const daysTaken = myMonthLeaves.reduce((s,l)=>s + (Number(l.days)||0),0);
+  const monthlyQuota = 2;
   const daysLeft = Math.max(0, monthlyQuota - daysTaken);
-
   const ctx = document.getElementById('empPie').getContext('2d');
-  if(pieChart) pieChart.destroy();
-  pieChart = new Chart(ctx, {
-    type:'pie',
-    data:{ labels:['Taken','Left'], datasets:[{ data:[daysTaken, daysLeft], backgroundColor:['#1e9c55','#cfd8e3'] }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{
-        legend:{ position:'bottom' },
-        title:{ display:true, text:`${month} Usage` },
-        tooltip:{
-          callbacks:{
-            label:(context)=>{
-              const total = context.dataset.data.reduce((a,b)=>a+b,0) || 1;
-              const val = context.parsed;
-              const pct = Math.round((val/total)*100);
-              return `${context.label}: ${val} day(s) • ${pct}%`;
-            }
-          }
-        }
-      } }
-  });
+  if(window.pieChart) window.pieChart.destroy();
+  window.pieChart = new Chart(ctx, { type:'pie', data:{ labels:['Taken','Left'], datasets:[{ data:[daysTaken, daysLeft], backgroundColor:['#1e9c55','#cfd8e3'] }] }, options:{ responsive:true, maintainAspectRatio:false } });
 }
 
-/**********************
- * APPLY LEAVE
- **********************/
-function renderMyLeaves(){
-  const tbody = document.getElementById('myLeavesTbody');
-  const leaves = getLeaves().filter(l=>l.userId===CURRENT_USER.id).sort((a,b)=>b.created.localeCompare(a.created));
-  tbody.innerHTML = '';
-  for(const l of leaves.slice(0,10)){
+/* My leaves */
+async function renderMyLeaves(){
+  const {data:ld} = await api('/leaves', { method:'GET' });
+  const leaves = (ld && ld.leaves) ? ld.leaves : [];
+  const my = leaves.filter(l=>l.userId===CURRENT_USER.id).sort((a,b)=> b.created.localeCompare(a.created));
+  const tbody = $('#myLeavesTbody'); tbody.innerHTML = '';
+  for(const l of my.slice(0,20)){
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${new Date(l.created).toLocaleDateString()}</td>
-                    <td>${l.type}</td>
-                    <td>${l.days}</td>
-                    <td>${statusTag(l.status)}</td>`;
+    tr.innerHTML = `<td>${new Date(l.created).toLocaleDateString()}</td><td>${l.type}</td><td>${l.days}</td><td>${statusTag(l.status)}</td>`;
     tbody.appendChild(tr);
   }
 }
 
-function statusTag(s){
-  if(s==='Pending')  return `<span class="tag tag-pending">Pending</span>`;
-  if(s==='Approved') return `<span class="tag tag-approved">Approved</span>`;
-  return `<span class="tag tag-rejected">Rejected</span>`;
-}
+/* Submit leave */
+$('#btnSubmitLeave').addEventListener('click', async ()=>{
+  $('#leaveErr').textContent = '';
+  const type = $('#lvType').value, days = Number($('#lvDays').value), reason = $('#lvReason').value.trim();
+  if(!type){ $('#leaveErr').textContent = 'Select leave type'; return; }
+  if(!days || days<=0){ $('#leaveErr').textContent = 'Enter valid days'; return; }
+  const {status,data} = await api('/leaves', { method:'POST', body: JSON.stringify({ type, days, reason }) });
+  if(status===200 && data.ok){ renderMyLeaves(); renderDashboard(); toast(data.leave.status==='Approved'?'Emergency auto-approved':'Leave submitted'); $('#lvType').value=''; $('#lvDays').value=''; $('#lvReason').value=''; }
+  else $('#leaveErr').textContent = data.msg || 'Error';
+});
 
-function submitLeave(){
-  const type = document.getElementById('lvType').value;
-  const days = parseInt(document.getElementById('lvDays').value,10);
-  const reason = document.getElementById('lvReason').value.trim();
-  const err = document.getElementById('leaveErr'); err.textContent='';
-  if(!type){ err.textContent='Please select leave type.'; return; }
-  if(!days || days<=0){ err.textContent='Enter valid number of days.'; return; }
-
-  const leaves = getLeaves();
-  const month = thisMonthKey();
-  const rec = { id:uid(), userId:CURRENT_USER.id, email:CURRENT_USER.email, type, days, reason, status:'Pending', month, created:nowISO() };
-
-  // Emergency auto-approve
-  if(type==='Emergency'){ rec.status='Approved'; }
-
-  leaves.push(rec); setLeaves(leaves);
-  renderMyLeaves(); renderDashboard();
-  alert(rec.status==='Approved' ? 'Emergency leave auto-approved.' : 'Leave submitted for approval.');
-  document.getElementById('lvType').value='';
-  document.getElementById('lvDays').value='';
-  document.getElementById('lvReason').value='';
-}
-
-/**********************
- * APPROVALS
- **********************/
-function can(role, perm){ return (PERMS[role]||[]).includes(perm); }
-
-function renderApprovals(){
-  const info = document.getElementById('apprInfo');
-  if(!can(CURRENT_USER.role,'approve_leave')){
-    info.textContent = 'You do not have permission to approve leaves.';
-    document.getElementById('apprTbody').innerHTML = '';
-    return;
-  } else { info.textContent = 'Approve or reject pending requests.'; }
-
-  const tbody = document.getElementById('apprTbody');
-  const leaves = getLeaves().sort((a,b)=>b.created.localeCompare(a.created));
-  tbody.innerHTML = '';
+/* Approvals */
+function statusTag(s){ if(s==='Pending') return `<span class="tag tag-pending">Pending</span>`; if(s==='Approved') return `<span class="tag tag-approved">Approved</span>`; return `<span class="tag tag-rejected">Rejected</span>`; }
+async function renderApprovals(){
+  if(!(PERMS[CURRENT_USER.role]||[]).includes('approve_leave')){ $('#apprInfo').textContent = 'You do not have permission to approve leaves.'; $('#apprTbody').innerHTML = ''; return; }
+  $('#apprInfo').textContent = 'Approve or reject pending requests.';
+  const {data:ld} = await api('/leaves?all=true', { method:'GET' });
+  const leaves = (ld && ld.leaves) ? ld.leaves : [];
+  const tbody = $('#apprTbody'); tbody.innerHTML = '';
   for(const l of leaves){
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${l.email}</td><td>${l.type}</td><td>${l.days}</td><td>${new Date(l.created).toLocaleString()}</td>
-                    <td>${statusTag(l.status)}</td>
-                    <td>${l.type==='Emergency' ? '—' : actionBtns(l)}</td>`;
+    tr.innerHTML = `<td>${l.email||''}</td><td>${l.type}</td><td>${l.days}</td><td>${new Date(l.created).toLocaleString()}</td><td>${statusTag(l.status)}</td><td>${l.status==='Pending'?actionBtns(l):'—'}</td>`;
     tbody.appendChild(tr);
   }
 }
+function actionBtns(l){ return `<div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="approve('${l.id}')">Approve</button><button class="btn btn-muted" onclick="reject('${l.id}')">Reject</button></div>`; }
+window.approve = async function(id){ const {status,data} = await api(`/leaves/${id}`, { method:'PUT', body: JSON.stringify({ action:'approve' }) }); if(status===200 && data.ok){ renderApprovals(); renderDashboard(); toast('Approved'); } else toast('Error'); }
+window.reject = async function(id){ const {status,data} = await api(`/leaves/${id}`, { method:'PUT', body: JSON.stringify({ action:'reject' }) }); if(status===200 && data.ok){ renderApprovals(); renderDashboard(); toast('Rejected'); } else toast('Error'); }
 
-function actionBtns(l){
-  if(l.status!=='Pending') return '—';
-  return `<div class="inline">
-            <button class="btn btn-primary" onclick="approve('${l.id}')">Approve</button>
-            <button class="btn btn-danger" onclick="reject('${l.id}')">Reject</button>
-          </div>`;
-}
-
-function approve(id){
-  const leaves = getLeaves();
-  const idx = leaves.findIndex(l=>l.id===id);
-  if(idx>-1){ leaves[idx].status='Approved'; setLeaves(leaves); renderApprovals(); renderDashboard(); alert('Approved'); }
-}
-function reject(id){
-  const leaves = getLeaves();
-  const idx = leaves.findIndex(l=>l.id===id);
-  if(idx>-1){ leaves[idx].status='Rejected'; setLeaves(leaves); renderApprovals(); renderDashboard(); alert('Rejected'); }
-}
-
-/**********************
- * REPORTING OFFICERS
- **********************/
-function renderReporting(){
-  const tbody = document.getElementById('reportingTbody');
-  const users = getUsers();
-  tbody.innerHTML='';
+/* Reporting */
+let reportingAssignments = {};
+async function renderReporting(){
+  if(!(PERMS[CURRENT_USER.role]||[]).includes('assign_reporting')){ $('#screen-reporting').style.display='none'; return; }
+  $('#screen-reporting').style.display='block';
+  const {status,data} = await api('/users', { method:'GET' });
+  if(status!==200 || !data.ok){ $('#reportingTbody').innerHTML = ''; return; }
+  const users = data.users;
+  const tbody = $('#reportingTbody'); tbody.innerHTML = '';
+  reportingAssignments = {};
   for(const u of users){
     const tr = document.createElement('tr');
     const options = users.map(v=>`<option value="${v.id}" ${u.reportingOfficerId===v.id?'selected':''}>${v.email}</option>`).join('');
-    tr.innerHTML = `<td>${u.email}</td><td>${u.role}</td>
-                    <td><select onchange="setRO('${u.id}', this.value)"><option value="">— None —</option>${options}</select></td>`;
+    tr.innerHTML = `<td>${u.email}</td><td>${u.role}</td><td><select onchange="setRO('${u.id}', this.value)"><option value="">— None —</option>${options}</select></td>`;
     tbody.appendChild(tr);
   }
-  // Only show if permission exists
-  document.getElementById('screen-reporting').style.display = can(CURRENT_USER.role,'assign_reporting') ? 'block' : 'none';
 }
+window.setRO = function(userId, roId){ reportingAssignments[userId] = roId || null; }
+$('#btnSaveReporting').addEventListener('click', async ()=>{ const {status,data} = await api('/reporting', { method:'PUT', body: JSON.stringify({ assignments: reportingAssignments }) }); if(status===200 && data.ok) toast('Updated'); else toast('Error'); });
 
-function setRO(userId, roId){
-  const users = getUsers();
-  const idx = users.findIndex(u=>u.id===userId);
-  if(idx>-1){ users[idx].reportingOfficerId = roId || null; setUsers(users); alert('Updated'); }
-}
-
-/**********************
- * ADMIN CONTROL PANEL
- **********************/
-function renderAdmin(){
-  // Permissions matrix
-  const container = document.getElementById('permMatrix');
+/* Admin */
+async function renderAdmin(){
+  if(!((PERMS[CURRENT_USER.role]||[]).includes('manage_permissions'))){ $('#screen-admin').style.display='none'; return; }
+  $('#screen-admin').style.display='block';
+  const {status:ps, data:pd} = await api('/permissions', { method:'GET' });
+  const perms = (ps===200 && pd.ok) ? pd.perms : {};
   const ALL_PERMS = ['view_dashboard','apply_leave','approve_leave','assign_reporting','manage_permissions','manage_users'];
-  const roles = Object.keys(PERMS);
-  let html = `<table><thead><tr><th>Role</th>${ALL_PERMS.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>`;
+  const roles = Object.keys(perms).length ? Object.keys(perms) : ['Admin','HR','Finance','IT','Teacher','Employee'];
+  let html = `<table style="width:100%"><thead><tr><th>Role</th>${ALL_PERMS.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>`;
   for(const role of roles){
     html += `<tr><td style="font-weight:700">${role}</td>`;
     for(const p of ALL_PERMS){
-      const checked = PERMS[role]?.includes(p) ? 'checked' : '';
+      const checked = (perms[role]||[]).includes(p) ? 'checked' : '';
       html += `<td><input type="checkbox" data-role="${role}" data-perm="${p}" ${checked}></td>`;
     }
     html += `</tr>`;
   }
   html += `</tbody></table>`;
-  container.innerHTML = html;
+  $('#permMatrix').innerHTML = html;
 
-  // Users list
-  const users = getUsers();
-  const tbody = document.getElementById('usersTbody');
-  tbody.innerHTML='';
+  const {status:us, data:ud} = await api('/users', { method:'GET' });
+  const users = (us===200 && ud.ok) ? ud.users : [];
+  const tbody = $('#usersTbody'); tbody.innerHTML = '';
   for(const u of users){
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${u.email}</td>
-                    <td><select onchange="changeRole('${u.id}', this.value)">
-                        ${Object.keys(PERMS).map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}
-                        </select></td>
-                    <td><button class="btn btn-danger" onclick="deleteUser('${u.id}')">Delete</button></td>`;
+    tr.innerHTML = `<td>${u.email}</td><td><select onchange="changeRole('${u.id}', this.value)">${['Admin','HR','Finance','IT','Teacher','Employee'].map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select></td><td><button class="btn btn-danger" onclick="deleteUser('${u.id}')">Delete</button></td>`;
     tbody.appendChild(tr);
   }
-
-  // Only visible to those with permission
-  document.getElementById('screen-admin').style.display = can(CURRENT_USER.role,'manage_permissions') ? 'block' : 'none';
 }
-
-function savePerms(){
+$('#btnSavePerms').addEventListener('click', async ()=>{
   const checks = document.querySelectorAll('#permMatrix input[type=checkbox]');
-  const next = {}; for(const role of Object.keys(PERMS)) next[role] = [];
+  const next = {};
   checks.forEach(ch=>{ if(ch.checked){ const r=ch.dataset.role, p=ch.dataset.perm; (next[r]||(next[r]=[])).push(p); } });
-  PERMS = next; writeLS(LS.perms, PERMS); alert('Permissions saved'); startApp();
-}
-
-function changeRole(userId, role){
-  const users = getUsers(); const idx = users.findIndex(u=>u.id===userId);
-  if(idx>-1){ users[idx].role = role; setUsers(users); if(CURRENT_USER.id===userId){ CURRENT_USER.role = role; startApp(); } }
-}
-
-function deleteUser(userId){
-  if(!confirm('Delete user?')) return;
-  let users = getUsers(); users = users.filter(u=>u.id!==userId); setUsers(users);
-  if(CURRENT_USER.id===userId){ logout(); } else { renderAdmin(); renderDashboard(); }
-}
-
-/**********************
- * PROFILE
- **********************/
-function renderProfile(){
-  document.getElementById('pfName').value = CURRENT_USER.profile.name || '';
-  document.getElementById('pfPhone').value = CURRENT_USER.profile.phone || '';
-  document.getElementById('pfAddr').value = CURRENT_USER.profile.address || '';
-  document.getElementById('pfPreview').src = CURRENT_USER.profile.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(CURRENT_USER.email)}`;
-}
-
-document.getElementById('pfPhoto').addEventListener('change', async (e)=>{
-  const file = e.target.files[0]; if(!file) return;
-  const url = await fileToDataURL(file);
-  CURRENT_USER.profile.photo = url; updateCurrentUser();
-  document.getElementById('pfPreview').src = url;
-  document.getElementById('userAvatar').src = url;
+  const {status,data} = await api('/permissions', { method:'PUT', body: JSON.stringify({ perms: next }) });
+  if(status===200 && data.ok){ toast('Permissions saved'); loadPermissionsAndRender(); } else toast('Error');
 });
+window.changeRole = async function(userId, role){ const {status,data} = await api('/users/'+userId, { method:'PUT', body: JSON.stringify({ role }) }); if(status===200 && data.ok){ toast('Role updated'); if(userId===CURRENT_USER.id){ startApp(); } else renderAdmin(); } else toast('Error'); }
+window.deleteUser = async function(userId){ if(!confirm('Delete user?')) return; const {status,data} = await api('/users/'+userId, { method:'DELETE' }); if(status===200 && data.ok){ toast('Deleted'); if(userId===CURRENT_USER.id) logout(); else renderAdmin(); } else toast('Error'); }
 
+/* Profile */
 function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+$('#pfPhoto').addEventListener('change', async (e)=>{ const f = e.target.files[0]; if(!f) return; const url = await fileToDataURL(f); $('#pfPreview').src = url; });
+function renderProfile(){ $('#pfName').value = CURRENT_USER.profile?.name || ''; $('#pfPhone').value = CURRENT_USER.profile?.phone || ''; $('#pfAddr').value = CURRENT_USER.profile?.address || ''; $('#pfPreview').src = CURRENT_USER.profile?.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(CURRENT_USER.email)}`; }
+$('#btnSaveProfile').addEventListener('click', async ()=>{ const payload = { name: $('#pfName').value.trim(), phone: $('#pfPhone').value.trim(), address: $('#pfAddr').value.trim(), photo: $('#pfPreview').src }; const {status,data} = await api('/profile', { method:'PUT', body: JSON.stringify(payload) }); if(status===200 && data.ok){ CURRENT_USER = data.user; toast('Profile saved'); renderProfile(); } else toast('Error'); });
 
-function saveProfile(){
-  CURRENT_USER.profile.name = document.getElementById('pfName').value.trim();
-  CURRENT_USER.profile.phone = document.getElementById('pfPhone').value.trim();
-  CURRENT_USER.profile.address = document.getElementById('pfAddr').value.trim();
-  updateCurrentUser(); alert('Profile saved');
-}
+/* ============== Login/Logout ============== */
+$('#logoutBtn').addEventListener('click', ()=> logout());
+function logout(){ localStorage.removeItem(authTokenKey); location.reload(); }
 
-function updateCurrentUser(){
-  const users = getUsers(); const idx = users.findIndex(u=>u.id===CURRENT_USER.id);
-  if(idx>-1){ users[idx] = CURRENT_USER; setUsers(users); }
-}
+/* small helpers to keep UI sane if elements missing */
+function safeId(id){ return document.getElementById(id) || { addEventListener(){}, value:'', classList:{}, style:{} }; }
 
-/**********************
- * BOOTSTRAP DEMO DATA (if empty)
- **********************/
-(function bootstrap(){
-  if(!readLS(LS.perms, null)){ writeLS(LS.perms, DEFAULT_PERMISSIONS); }
-  if(readLS(LS.users, []).length===0){
-    (async ()=>{
-      const admin = { id:uid(), email:'admin@demo.com', passHash: await sha256('Admin@123'), role:'Admin', profile:{name:'Admin', phone:'', address:'', photo:''}, reportingOfficerId:null, resetToken:null };
-      const hr    = { id:uid(), email:'hr@demo.com',    passHash: await sha256('Hr@12345'),    role:'HR',    profile:{name:'HR', phone:'', address:'', photo:''}, reportingOfficerId:null, resetToken:null };
-      const emp   = { id:uid(), email:'emp@demo.com',   passHash: await sha256('Emp@12345'),   role:'Employee', profile:{name:'Employee', phone:'', address:'', photo:''}, reportingOfficerId:null, resetToken:null };
-      writeLS(LS.users, [admin, hr, emp]);
+/* expose some global functions used in inline onclicks */
+window.openAuth = openAuth;
 
-      const sampleLeaves = [
-        { id:uid(), userId:emp.id, email:emp.email, type:'Casual', days:1, reason:'Personal', status:'Pending', month:thisMonthKey(), created:nowISO() },
-        { id:uid(), userId:emp.id, email:emp.email, type:'Emergency', days:1, reason:'Medical', status:'Approved', month:thisMonthKey(), created:nowISO() }
-      ];
-      writeLS(LS.leaves, sampleLeaves);
-    })();
-  }
-
-  // Auto-login if session exists
-  const sess = readLS(LS.session, null);
-  if(sess){ startApp(); }
-})();
-
+/* End of script */
 </script>
 </body>
 </html>
